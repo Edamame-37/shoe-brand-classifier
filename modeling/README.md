@@ -9,11 +9,13 @@ Tidak ada virtual environment atau proses training yang dijalankan.
 2. Restart kernel jika Jupyter memintanya.
 3. Buka `dataset/load_shoe_dataset.ipynb` untuk mengunduh, memeriksa, dan
    mengekspor dataset ke format folder YOLO11.
-4. Buka `training/EDA.ipynb` untuk menganalisis distribusi kelas, dimensi,
+4. Buka `training/stratified_split.ipynb` untuk membuat split train, validation,
+   dan test yang seimbang pada `datasets/shoe_brands_stratified`.
+5. Buka `training/EDA.ipynb` untuk menganalisis distribusi kelas, dimensi,
    kualitas gambar, file rusak, dan exact duplicate sebelum training.
-5. Untuk inference cloud, atur `ROBOFLOW_API_KEY`, buka
+6. Untuk inference cloud, atur `ROBOFLOW_API_KEY`, buka
    `roboflow/shoe_brand_inference.ipynb`, lalu isi `IMAGE_SOURCE`.
-6. Untuk memeriksa kesiapan YOLO11, buka
+7. Untuk memeriksa kesiapan YOLO11, buka
    `yolo11/setup_yolo11.ipynb`.
 
 Kernel Jupyter saat ini menggunakan Python 3.13. `inference-sdk` memerlukan
@@ -61,3 +63,7 @@ modeling/datasets/shoe_brands/
 
 Notebook YOLO11 hanya memvalidasi struktur dataset dan memuat checkpoint
 `yolo11n-cls.pt`. Notebook tersebut tidak memanggil `model.train()`.
+
+Dataset untuk setup dan training model adalah `shoe_brands_stratified`, dengan
+193 gambar per kelas untuk train, 55 per kelas untuk validation, dan 27 per
+kelas untuk test. Dataset hasil ekspor awal tetap dipertahankan sebagai sumber.
