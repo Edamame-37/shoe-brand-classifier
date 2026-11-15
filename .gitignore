@@ -1,8 +1,6 @@
-.venv/
 __pycache__/
 *.py[cod]
 .env
-modeling/.env
 *.pt
 *.onnx
 modeling/datasets/

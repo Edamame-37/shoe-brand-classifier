@@ -1,4 +1,0 @@
-inference-sdk==1.8.5
-python-dotenv==1.2.4
-ultralytics==8.4.213
-

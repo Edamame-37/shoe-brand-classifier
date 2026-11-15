@@ -1,48 +1,34 @@
 # Shoe Brand Modeling
 
-This directory contains Roboflow cloud inference for the hosted
-`shoe-classification-k9ajr/2` model and a local YOLO11 classification setup.
-No training command is executed by these scripts.
+Semua workflow modeling menggunakan Jupyter Notebook dan kernel Python global.
+Tidak ada virtual environment atau proses training yang dijalankan.
 
-## Environment setup
+## Urutan penggunaan
 
-Use Python 3.11 because the Roboflow SDK does not support Python 3.14.
+1. Buka `setup/setup_dependencies.ipynb` dan jalankan semua cell.
+2. Restart kernel jika Jupyter memintanya.
+3. Untuk inference cloud, atur `ROBOFLOW_API_KEY`, buka
+   `roboflow/shoe_brand_inference.ipynb`, lalu isi `IMAGE_SOURCE`.
+4. Untuk memeriksa kesiapan YOLO11, siapkan dataset dan buka
+   `yolo11/setup_yolo11.ipynb`.
 
-```powershell
-py -3.11 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r modeling\requirements.txt
-```
+Kernel Jupyter saat ini menggunakan Python 3.13. `inference-sdk` memerlukan
+Python 3.10 sampai sebelum Python 3.14.
 
-Copy the environment template and set the Roboflow API key:
+## Roboflow API key
 
-```powershell
-Copy-Item modeling\.env.example modeling\.env
-```
-
-Edit `modeling/.env` and replace the placeholder value. The key is sent in the
-`Authorization` header and is never placed in the query string.
-
-## Roboflow inference
-
-Run inference using a local file:
+Atur API key pada environment sebelum menjalankan Jupyter. Contoh PowerShell:
 
 ```powershell
-python modeling\roboflow_inference.py C:\path\to\shoe.jpg
+$env:ROBOFLOW_API_KEY = "your_actual_api_key"
+jupyter lab
 ```
 
-An image URL is also accepted. Use `--output` to save the response while still
-printing it to stdout:
+Credential hanya dibaca dari environment variable. Notebook menggunakan
+`api_key_transport="header"`, sehingga API key dikirim melalui Authorization
+header dan tidak ditempatkan pada query string.
 
-```powershell
-python modeling\roboflow_inference.py https://example.com/shoe.jpg `
-  --output modeling\outputs\prediction.json
-```
-
-## YOLO11 classification setup
-
-Arrange the local dataset using Ultralytics' classification folder format:
+## Struktur dataset YOLO11
 
 ```text
 modeling/datasets/shoe_brands/
@@ -54,17 +40,11 @@ modeling/datasets/shoe_brands/
 |   |-- adidas/
 |   |-- converse/
 |   `-- nike/
-`-- test/                  # optional
+`-- test/                  # opsional
     |-- adidas/
     |-- converse/
     `-- nike/
 ```
 
-Validate the dataset structure and initialize the pretrained YOLO11
-classification checkpoint:
-
-```powershell
-python modeling\yolo11_setup.py
-```
-
-This downloads/loads `yolo11n-cls.pt` when needed, but does not start training.
+Notebook YOLO11 hanya memvalidasi struktur dataset dan memuat checkpoint
+`yolo11n-cls.pt`. Notebook tersebut tidak memanggil `model.train()`.
