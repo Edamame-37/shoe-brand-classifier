@@ -20,6 +20,9 @@ Tidak ada virtual environment atau proses training yang dijalankan.
    `roboflow/shoe_brand_inference.ipynb`, lalu isi `IMAGE_SOURCE`.
 8. Untuk memeriksa kesiapan YOLO11, buka
    `yolo11/setup_yolo11.ipynb`.
+9. Jalankan `training/train_yolo11n.ipynb` untuk baseline training,
+   hyperparameter tuning, final training, evaluasi validation/test, error
+   analysis, penyimpanan artefak, inference sampel, dan export ONNX.
 
 Kernel Jupyter saat ini menggunakan Python 3.13. `inference-sdk` memerlukan
 Python 3.10 sampai sebelum Python 3.14.
@@ -72,3 +75,15 @@ Dataset untuk setup dan training model adalah `shoe_brands_preprocessed`, dengan
 kelas untuk test. Dataset hasil ekspor awal dan stratified tetap dipertahankan
 sebagai sumber. Augmentasi tidak disimpan secara statis dan harus diterapkan
 secara dinamis hanya pada split train ketika training disetujui.
+
+## YOLO11n training
+
+Notebook `training/train_yolo11n.ipynb` menggunakan pretrained
+`yolo11n-cls.pt`. Konfigurasi default menjalankan baseline 30 epoch, tuning 20
+iteration × 20 epoch, lalu final training maksimal 100 epoch dengan early
+stopping. Tuning menjalankan banyak training trial; GPU sangat disarankan.
+
+Sesuaikan `BATCH_SIZE`, `WORKERS`, `TUNING_ITERATIONS`, dan jumlah epoch pada
+cell konfigurasi berdasarkan VRAM serta waktu komputasi yang tersedia. Semua
+checkpoint, log, metrik, prediksi test, dan hasil export disimpan di
+`modeling/runs/training/` dan tidak dilacak Git.
