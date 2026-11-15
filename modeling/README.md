@@ -7,9 +7,11 @@ Tidak ada virtual environment atau proses training yang dijalankan.
 
 1. Buka `setup/setup_dependencies.ipynb` dan jalankan semua cell.
 2. Restart kernel jika Jupyter memintanya.
-3. Untuk inference cloud, atur `ROBOFLOW_API_KEY`, buka
+3. Buka `dataset/load_shoe_dataset.ipynb` untuk mengunduh, memeriksa, dan
+   mengekspor dataset ke format folder YOLO11.
+4. Untuk inference cloud, atur `ROBOFLOW_API_KEY`, buka
    `roboflow/shoe_brand_inference.ipynb`, lalu isi `IMAGE_SOURCE`.
-4. Untuk memeriksa kesiapan YOLO11, siapkan dataset dan buka
+5. Untuk memeriksa kesiapan YOLO11, buka
    `yolo11/setup_yolo11.ipynb`.
 
 Kernel Jupyter saat ini menggunakan Python 3.13. `inference-sdk` memerlukan
@@ -29,6 +31,15 @@ Credential hanya dibaca dari environment variable. Notebook menggunakan
 header dan tidak ditempatkan pada query string.
 
 ## Struktur dataset YOLO11
+
+Dataset bersumber dari `keremberke/shoe-classification` dengan konfigurasi
+`full` di Hugging Face. Dataset terdiri dari 576 gambar training, 166 gambar
+validation, dan 83 gambar test. Split `validation` dari Hugging Face dipetakan ke
+folder `val` untuk format Ultralytics.
+
+Catatan kualitas data: archive `valid.zip` upstream saat ini berisi 166 gambar
+Nike dan tidak berisi Adidas atau Converse. Notebook mempertahankan isi dataset
+upstream, menampilkan peringatan kelas kosong, dan tidak memulai training.
 
 ```text
 modeling/datasets/shoe_brands/
