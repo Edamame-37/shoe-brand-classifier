@@ -67,8 +67,9 @@ modeling/datasets/shoe_brands/
     `-- nike/
 ```
 
-Notebook YOLO11 hanya memvalidasi struktur dataset dan memuat checkpoint
-`yolo11n-cls.pt`. Notebook tersebut tidak memanggil `model.train()`.
+Notebook YOLO11 hanya memvalidasi struktur dataset dan memuat pretrained
+`yolo11n-cls.pt` dari Ultralytics. Notebook tersebut tidak memanggil
+`model.train()`.
 
 Dataset untuk setup dan training model adalah `shoe_brands_preprocessed`, dengan
 193 gambar per kelas untuk train, 55 per kelas untuk validation, dan 27 per
@@ -79,11 +80,32 @@ secara dinamis hanya pada split train ketika training disetujui.
 ## YOLO11n training
 
 Notebook `training/train_yolo11n.ipynb` menggunakan pretrained
-`yolo11n-cls.pt`. Konfigurasi default menjalankan baseline 30 epoch, tuning 20
+`yolo11n-cls.pt` dari Ultralytics. Konfigurasi default menjalankan baseline 30
+epoch, tuning 20
 iteration × 20 epoch, lalu final training maksimal 100 epoch dengan early
 stopping. Tuning menjalankan banyak training trial; GPU sangat disarankan.
 
 Sesuaikan `BATCH_SIZE`, `WORKERS`, `TUNING_ITERATIONS`, dan jumlah epoch pada
-cell konfigurasi berdasarkan VRAM serta waktu komputasi yang tersedia. Semua
-checkpoint, log, metrik, prediksi test, dan hasil export disimpan di
-`modeling/runs/training/` dan tidak dilacak Git.
+cell konfigurasi berdasarkan VRAM serta waktu komputasi yang tersedia. Log,
+metrik, dan prediksi test disimpan di `modeling/runs/training/` dan tidak
+dilacak Git. Model yang telah diarsipkan disimpan di folder `model/`.
+
+## Struktur model
+
+Hanya baseline terbaik dan model terbaik hasil full training yang disimpan.
+Keduanya dikelompokkan berdasarkan waktu terakhir file PyTorch diedit.
+
+```text
+model/
+|-- 2026-11-15_20-13-41_baseline-best/
+|   |-- model.pt
+|   `-- model.onnx
+`-- 2026-11-15_22-59-37_final-best/
+    |-- model.pt
+    `-- model.onnx
+```
+
+Setiap folder model menyediakan format PyTorch dan ONNX. Path baseline terbaik
+dan final terbaik ditetapkan secara eksplisit di notebook. Checkpoint epoch,
+checkpoint `last`, hasil tuning sementara, dan salinan pretrained tidak
+dipertahankan.
