@@ -1,0 +1,42 @@
+{
+  "packageName": "2026-11-16_improvement-best",
+  "task": "shoe-brand-classification",
+  "classes": [
+    "adidas",
+    "converse",
+    "nike"
+  ],
+  "imageSize": 224,
+  "selectedModel": "baseline_recovered",
+  "selectionMetric": "validation_macro_f1",
+  "selectionReason": "Baseline recovered memiliki validation macro-F1 tertinggi dibandingkan head-only, progressive fine-tune, dan baseline fine-tune.",
+  "metrics": {
+    "validationAccuracy": 0.9212121212121213,
+    "validationMacroF1": 0.9210877544210878,
+    "testAccuracy": 0.8395061728395061,
+    "testMacroPrecision": 0.8485100341107822,
+    "testMacroRecall": 0.839506172839506,
+    "testMacroF1": 0.8408003405704555,
+    "testWeightedF1": 0.8408003405704557
+  },
+  "source": {
+    "selectedCheckpoint": "modeling/runs/training/improvement/baseline_recovered/weights/best.pt",
+    "publishedCheckpoint": "modeling/runs/training/improvement/best_model.pt"
+  },
+  "runtime": {
+    "ultralytics": "8.4.213",
+    "pytorch": "2.15.0+cpu",
+    "onnxRuntime": "1.32.0"
+  },
+  "artifacts": {
+    "model.pt": {
+      "format": "PyTorch",
+      "sha256": "8FF16BFEA73C93EA22AAAA7D2D0EE182AA7ED73C3A799C9B88D9DBB9FFAF13CA"
+    },
+    "model.onnx": {
+      "format": "ONNX",
+      "sha256": "802754A8834BF1F17096EE1CA049B4FE1A293CCA7406F85779A342B3F4EB261C"
+    }
+  },
+  "packagedDate": "2026-11-16"
+}
