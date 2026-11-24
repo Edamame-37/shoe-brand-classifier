@@ -162,6 +162,47 @@ Model menerima citra RGB, melakukan resize internal ke 320×320, lalu mengembali
 
 Training final direkam pada [`modeling/training/train_yolo11s_robust.ipynb`](modeling/training/train_yolo11s_robust.ipynb). Seluruh tahap menggunakan batch size 16, optimizer AdamW, deterministic mode, seed 37, workers 0, dan early stopping.
 
+### Algoritma dan Cara Kerja
+
+Training menggunakan **supervised multiclass image classification** berbasis Convolutional Neural Network (CNN) pada arsitektur YOLO11s Classification. Setiap citra training memiliki satu label target, yaitu Adidas, Converse, atau Nike. Bobot awal berasal dari checkpoint pretrained `yolo11s-cls.pt`, kemudian disesuaikan terhadap dataset merek sepatu melalui transfer learning.
+
+Alur optimasi untuk setiap batch adalah sebagai berikut:
+
+1. **Preprocessing batch.** Citra training di-resize ke resolusi tahap aktif, dinormalisasi oleh pipeline Ultralytics, dan menerima augmentasi acak. Augmentasi hanya aktif pada training set.
+2. **Feature extraction.** Backbone YOLO11s memproses citra melalui convolutional blocks untuk mempelajari pola visual bertingkat, mulai dari edge dan texture hingga bentuk, logo, serta karakteristik desain sepatu.
+3. **Classification head.** Feature map diringkas dan diproyeksikan menjadi tiga logits, masing-masing untuk Adidas, Converse, dan Nike. Logit adalah skor mentah sebelum dikonversi menjadi probabilitas.
+4. **Cross-entropy loss.** Implementasi `v8ClassificationLoss` pada Ultralytics 8.4.213 menghitung multiclass cross-entropy langsung dari logits dan label aktual. Untuk batch dengan ukuran \(N\), loss dinyatakan sebagai:
+
+   $$
+   \mathcal{L} = -\frac{1}{N}\sum_{i=1}^{N}
+   \log\left(\operatorname{softmax}(\mathbf{z}_i)_{y_i}\right)
+   $$
+
+   dengan \(\mathbf{z}_i\) sebagai vektor logits dan \(y_i\) sebagai indeks kelas aktual. Prediksi yang memberi probabilitas rendah pada kelas aktual menghasilkan loss lebih besar.
+5. **Backpropagation.** PyTorch menghitung gradien loss terhadap setiap parameter trainable menggunakan automatic differentiation. Gradien mengukur arah perubahan bobot yang akan menurunkan loss.
+6. **AdamW update.** Optimizer AdamW memperbarui bobot menggunakan moving average dari gradien dan kuadrat gradien. Weight decay diterapkan secara terpisah dari pembaruan gradien untuk membantu regularisasi parameter.
+7. **Validation.** Setelah setiap epoch, model dievaluasi pada validation set tanpa augmentasi training. Checkpoint dengan performa validation terbaik disimpan sebagai `best.pt`.
+8. **Early stopping.** Training dihentikan apabila performa validation tidak membaik selama jumlah epoch yang ditentukan oleh parameter `patience`.
+
+Saat inference, softmax mengubah tiga logits menjadi probabilitas yang berjumlah satu. Kelas dengan probabilitas tertinggi menjadi label prediksi dan probabilitas tersebut dilaporkan sebagai confidence.
+
+```mermaid
+flowchart LR
+    A[Training image dan label] --> B[Resize dan augmentasi]
+    B --> C[YOLO11s CNN backbone]
+    C --> D[Classification head]
+    D --> E[Three class logits]
+    E --> F[Cross-entropy loss]
+    F --> G[Backpropagation]
+    G --> H[AdamW weight update]
+    H --> I[Validation]
+    I --> J{Early stopping?}
+    J -->|Belum| A
+    J -->|Ya| K[Best checkpoint]
+```
+
+Transfer learning dilaksanakan dalam tiga tahap. Tahap pertama melatih classification head dengan sebagian besar backbone dibekukan. Tahap kedua membuka seluruh jaringan untuk fine-tuning dengan learning rate lebih kecil. Tahap terakhir menaikkan resolusi menjadi 320×320 dan kembali menurunkan learning rate agar parameter menyesuaikan detail visual beresolusi lebih tinggi tanpa perubahan bobot yang agresif.
+
 ### Tahap 1 — Classification Head Adaptation
 
 Tahap awal menggunakan bobot pretrained YOLO11s pada resolusi 224×224. Sepuluh layer pertama dibekukan agar classification head beradaptasi terhadap tiga kelas target.
@@ -265,13 +306,15 @@ Macro average digunakan untuk memberikan bobot yang sama kepada setiap kelas. Ka
 
 ### Confusion Matrix
 
-Baris menunjukkan label aktual dan kolom menunjukkan hasil prediksi.
+Gambar confusion matrix dibuat dari hasil evaluasi menggunakan [`modeling/training/generate_confusion_matrix.py`](modeling/training/generate_confusion_matrix.py). Baris menunjukkan label aktual, kolom menunjukkan hasil prediksi, dan persentase pada setiap sel dinormalisasi terhadap jumlah citra pada kelas aktual.
 
-| Aktual \ Prediksi | Adidas | Converse | Nike |
-|---|---:|---:|---:|
-| Adidas | 24 | 1 | 2 |
-| Converse | 0 | 25 | 2 |
-| Nike | 2 | 2 | 23 |
+![YOLO11s test confusion matrix](docs/assets/confusion_matrix.png)
+
+Gambar dapat diregenerasi dengan perintah berikut:
+
+```powershell
+python modeling/training/generate_confusion_matrix.py
+```
 
 Dari 81 citra test, 72 diklasifikasikan dengan benar dan 9 salah klasifikasi. Kesalahan terbesar terdapat pada kelas Nike, dengan dua citra diprediksi sebagai Adidas dan dua citra diprediksi sebagai Converse.
 
